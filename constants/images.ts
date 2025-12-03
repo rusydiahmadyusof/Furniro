@@ -1,0 +1,27 @@
+export const IMAGES = {
+  logo: '/images/logos/furniro-logo.png',
+  account: '/images/icons/account.svg',
+  search: '/images/icons/search.svg',
+  wishlist: '/images/icons/wishlist.svg',
+  cart: '/images/icons/cart.svg',
+  heroBanner: '/images/backgrounds/hero-banner.png',
+  scandinavianInterior: '/images/backgrounds/scandinavian-interior.png',
+  dining: '/images/categories/dining.png',
+  living: '/images/categories/living.png',
+  bedroom: '/images/categories/bedroom.png',
+  innerPeace: '/images/inspirations/inner-peace.png',
+  cozyLiving: '/images/inspirations/cozy-living.png',
+  modernDining: '/images/inspirations/modern-dining.png',
+  gallery: [
+    '/images/gallery/gallery-1.png',
+    '/images/gallery/gallery-2.png',
+    '/images/gallery/gallery-3.png',
+    '/images/gallery/gallery-4.png',
+    '/images/gallery/gallery-5.png',
+    '/images/gallery/gallery-6.png',
+    '/images/gallery/gallery-7.png',
+    '/images/gallery/gallery-8.png',
+    '/images/gallery/gallery-9.png',
+  ],
+} as const;
+

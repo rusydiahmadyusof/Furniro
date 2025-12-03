@@ -1,0 +1,19 @@
+const ClockIcon = ({ className }: { className?: string }) => {
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      className={className}
+    >
+      <path
+        d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 13H7V11H12V6H13V13Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+};
+
+export default ClockIcon;
+
