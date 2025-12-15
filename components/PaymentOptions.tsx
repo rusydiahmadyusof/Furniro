@@ -59,6 +59,27 @@ const PaymentOptions = ({ onPaymentMethodChange }: PaymentOptionsProps) => {
             <input
               type="radio"
               name="payment"
+              value="stripe"
+              checked={selectedMethod === "stripe"}
+              onChange={() => handleMethodChange("stripe")}
+              className="w-[14px] h-[14px] text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 cursor-pointer"
+            />
+            <div className="flex-1">
+              <p className="font-medium text-base text-black mb-1">
+                Credit/Debit Card (Stripe)
+              </p>
+              <p className="font-light text-sm text-gray-3">
+                Secure payment via Stripe. Accepts Visa, Mastercard, and more.
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <div>
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="payment"
               value="cash-on-delivery"
               checked={selectedMethod === "cash-on-delivery"}
               onChange={() => handleMethodChange("cash-on-delivery")}

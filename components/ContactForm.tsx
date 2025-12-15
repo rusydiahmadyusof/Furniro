@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useToast } from "./ToastProvider";
+import LoadingSpinner from "./LoadingSpinner";
 
 const ContactForm = () => {
   const { showToast } = useToast();
@@ -12,6 +13,7 @@ const ContactForm = () => {
     message: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -42,13 +44,59 @@ const ContactForm = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) {
-      showToast("Message sent successfully!", "success");
+    
+    if (!validate()) {
+      showToast("Please fill in all required fields correctly", "error");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Handle validation errors from server
+        if (data.errors) {
+          setErrors(data.errors);
+          showToast(
+            data.message || "Please fix the errors in the form",
+            "error"
+          );
+        } else {
+          showToast(
+            data.message || "Failed to send message. Please try again later.",
+            "error"
+          );
+        }
+        return;
+      }
+
+      // Success
+      showToast(
+        data.message || "Message sent successfully! We'll get back to you soon.",
+        "success"
+      );
       setFormData({ name: "", email: "", subject: "", message: "" });
-    } else {
-      showToast("Please fill in all required fields", "error");
+      setErrors({});
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      showToast(
+        "Network error. Please check your connection and try again.",
+        "error"
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -144,9 +192,11 @@ const ContactForm = () => {
 
         <button
           type="submit"
-          className="bg-primary text-white font-semibold text-base px-12 py-3 rounded hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          disabled={isSubmitting}
+          className="bg-primary text-white font-semibold text-base px-12 py-3 rounded hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          Submit
+          {isSubmitting && <LoadingSpinner size="sm" className="text-white" />}
+          {isSubmitting ? "Sending..." : "Submit"}
         </button>
       </div>
     </form>

@@ -20,13 +20,17 @@ export default function CartPage() {
   };
 
   const handleRemove = (id: string) => {
+    const item = cartItems.find((item) => item.id === id);
     removeFromCart(id);
-    showToast("Item removed from cart", "info");
+    showToast(
+      item ? `${item.product.name} removed from cart` : "Item removed from cart",
+      "info"
+    );
   };
 
   const handleCheckout = () => {
     if (cartItems.length === 0) {
-      showToast("Your cart is empty", "error");
+      showToast("Your cart is empty. Add items to proceed to checkout.", "error");
       return;
     }
     router.push("/checkout");

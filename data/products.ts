@@ -30,7 +30,7 @@ export const allProducts: Product[] = [
     id: '2',
     name: 'Leviosa',
     description: 'Stylish cafe chair',
-    price: 'Rp 2.500.000',
+    price: 'RM 2,500',
     imageUrl: '/images/products/image 23.png',
     category: 'Dining',
     details:
@@ -122,7 +122,7 @@ export const allProducts: Product[] = [
     id: '10',
     name: 'Leviosa',
     description: 'Stylish cafe chair',
-    price: 'Rp 2.500.000',
+    price: 'RM 2,500',
     imageUrl: '/images/products/image 82.png',
     category: 'Dining',
     details:

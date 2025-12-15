@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { CartProvider } from "@/contexts/CartContext";
-import { WishlistProvider } from "@/contexts/WishlistContext";
-import { ToastProvider } from "@/components/ToastProvider";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Furniro - Furniture E-Commerce",
@@ -17,11 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <CartProvider>
-          <WishlistProvider>
-            <ToastProvider>{children}</ToastProvider>
-          </WishlistProvider>
-        </CartProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

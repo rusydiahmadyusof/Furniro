@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useToast } from './ToastProvider';
 
 interface BillingDetailsFormProps {
-  onSubmit?: (data: BillingFormData) => void;
+  onDataChange?: (data: BillingFormData) => void;
+  initialData?: Partial<BillingFormData>;
+  showErrors?: boolean;
 }
 
 export interface BillingFormData {
@@ -21,31 +22,44 @@ export interface BillingFormData {
   additionalInfo: string;
 }
 
-const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
-  const { showToast } = useToast();
+const BillingDetailsForm = ({
+  onDataChange,
+  initialData,
+  showErrors = false,
+}: BillingDetailsFormProps) => {
   const [formData, setFormData] = useState<BillingFormData>({
-    firstName: '',
-    lastName: '',
-    companyName: '',
-    country: 'Malaysia',
-    streetAddress: '',
-    townCity: '',
-    province: 'Kuala Lumpur',
-    zipCode: '',
-    phone: '',
-    email: '',
-    additionalInfo: '',
+    firstName: initialData?.firstName || '',
+    lastName: initialData?.lastName || '',
+    companyName: initialData?.companyName || '',
+    country: initialData?.country || 'Malaysia',
+    streetAddress: initialData?.streetAddress || '',
+    townCity: initialData?.townCity || '',
+    province: initialData?.province || 'Kuala Lumpur',
+    zipCode: initialData?.zipCode || '',
+    phone: initialData?.phone || '',
+    email: initialData?.email || '',
+    additionalInfo: initialData?.additionalInfo || '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    setFormData({
+    const newData = {
       ...formData,
       [e.target.name]: e.target.value,
-    });
+    };
+    setFormData(newData);
+
+    // Clear error for this field
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
+
+    // Notify parent of data change
+    onDataChange?.(newData);
   };
 
   return (
@@ -69,8 +83,15 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
               name='firstName'
               value={formData.firstName}
               onChange={handleChange}
-              className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors placeholder:text-gray-3'
+              className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors placeholder:text-gray-3 ${
+                showErrors && errors.firstName
+                  ? 'border-red-accent focus:border-red-accent'
+                  : 'border-gray-3 focus:border-primary'
+              }`}
             />
+            {showErrors && errors.firstName && (
+              <p className='text-red-accent text-sm mt-1'>{errors.firstName}</p>
+            )}
           </div>
 
           <div>
@@ -86,8 +107,15 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
               name='lastName'
               value={formData.lastName}
               onChange={handleChange}
-              className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors placeholder:text-gray-3'
+              className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors placeholder:text-gray-3 ${
+                showErrors && errors.lastName
+                  ? 'border-red-accent focus:border-red-accent'
+                  : 'border-gray-3 focus:border-primary'
+              }`}
             />
+            {showErrors && errors.lastName && (
+              <p className='text-red-accent text-sm mt-1'>{errors.lastName}</p>
+            )}
           </div>
         </div>
 
@@ -161,8 +189,17 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
             name='streetAddress'
             value={formData.streetAddress}
             onChange={handleChange}
-            className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors'
+            className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors ${
+              showErrors && errors.streetAddress
+                ? 'border-red-accent focus:border-red-accent'
+                : 'border-gray-3 focus:border-primary'
+            }`}
           />
+          {showErrors && errors.streetAddress && (
+            <p className='text-red-accent text-sm mt-1'>
+              {errors.streetAddress}
+            </p>
+          )}
         </div>
 
         <div>
@@ -178,8 +215,15 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
             name='townCity'
             value={formData.townCity}
             onChange={handleChange}
-            className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors'
+            className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors ${
+              showErrors && errors.townCity
+                ? 'border-red-accent focus:border-red-accent'
+                : 'border-gray-3 focus:border-primary'
+            }`}
           />
+          {showErrors && errors.townCity && (
+            <p className='text-red-accent text-sm mt-1'>{errors.townCity}</p>
+          )}
         </div>
 
         <div>
@@ -245,8 +289,15 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
             name='zipCode'
             value={formData.zipCode}
             onChange={handleChange}
-            className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors'
+            className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors ${
+              showErrors && errors.zipCode
+                ? 'border-red-accent focus:border-red-accent'
+                : 'border-gray-3 focus:border-primary'
+            }`}
           />
+          {showErrors && errors.zipCode && (
+            <p className='text-red-accent text-sm mt-1'>{errors.zipCode}</p>
+          )}
         </div>
 
         <div>
@@ -262,8 +313,15 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
             name='phone'
             value={formData.phone}
             onChange={handleChange}
-            className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors'
+            className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors ${
+              showErrors && errors.phone
+                ? 'border-red-accent focus:border-red-accent'
+                : 'border-gray-3 focus:border-primary'
+            }`}
           />
+          {showErrors && errors.phone && (
+            <p className='text-red-accent text-sm mt-1'>{errors.phone}</p>
+          )}
         </div>
 
         <div>
@@ -279,8 +337,15 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
             name='email'
             value={formData.email}
             onChange={handleChange}
-            className='w-full h-[75px] px-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors'
+            className={`w-full h-[75px] px-4 border rounded-[10px] focus:outline-none transition-colors ${
+              showErrors && errors.email
+                ? 'border-red-accent focus:border-red-accent'
+                : 'border-gray-3 focus:border-primary'
+            }`}
           />
+          {showErrors && errors.email && (
+            <p className='text-red-accent text-sm mt-1'>{errors.email}</p>
+          )}
         </div>
 
         <div>
@@ -300,20 +365,6 @@ const BillingDetailsForm = ({ onSubmit }: BillingDetailsFormProps) => {
             className='w-full min-h-[120px] px-4 py-4 border border-gray-3 rounded-[10px] focus:outline-none focus:border-primary transition-colors resize-none placeholder:text-gray-3'
           />
         </div>
-        <button
-          type='button'
-          onClick={() => {
-            if (formData.firstName && formData.lastName && formData.email) {
-              onSubmit?.(formData);
-              showToast('Billing details saved', 'success');
-            } else {
-              showToast('Please fill in required fields', 'error');
-            }
-          }}
-          className='mt-6 bg-primary text-white font-semibold text-base px-12 py-3 rounded hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
-        >
-          Save Details
-        </button>
       </form>
     </div>
   );

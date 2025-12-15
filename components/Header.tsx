@@ -5,8 +5,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { useAuth } from '@/contexts/AuthContext';
 import MobileMenu from './MobileMenu';
 import SearchModal from './SearchModal';
+import SignInModal from './SignInModal';
+import SignUpModal from './SignUpModal';
+import UserMenu from './UserMenu';
 import { IMAGES } from '@/constants/images';
 import AccountIcon from './icons/AccountIcon';
 import SearchIcon from './icons/SearchIcon';
@@ -16,8 +20,11 @@ import CartIcon from './icons/CartIcon';
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const { getTotalItems } = useCart();
   const { wishlistItems } = useWishlist();
+  const { user } = useAuth();
   const cartCount = getTotalItems();
   const wishlistCount = wishlistItems.length;
 
@@ -90,12 +97,17 @@ const Header = () => {
         </nav>
 
         <div className='flex items-center gap-6'>
-          <button
-            aria-label='Account'
-            className='w-6 h-6 text-gray-1 hover:text-primary transition-colors'
-          >
-            <AccountIcon />
-          </button>
+          {user ? (
+            <UserMenu user={user} />
+          ) : (
+            <button
+              onClick={() => setIsSignInOpen(true)}
+              aria-label='Sign In'
+              className='w-6 h-6 text-gray-1 hover:text-primary transition-colors'
+            >
+              <AccountIcon />
+            </button>
+          )}
           <button
             onClick={() => setIsSearchOpen(true)}
             aria-label='Search'
@@ -136,6 +148,22 @@ const Header = () => {
       <SearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+      />
+      <SignInModal
+        isOpen={isSignInOpen}
+        onClose={() => setIsSignInOpen(false)}
+        onSwitchToSignUp={() => {
+          setIsSignInOpen(false);
+          setIsSignUpOpen(true);
+        }}
+      />
+      <SignUpModal
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+        onSwitchToSignIn={() => {
+          setIsSignUpOpen(false);
+          setIsSignInOpen(true);
+        }}
       />
     </>
   );
