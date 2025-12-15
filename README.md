@@ -194,10 +194,27 @@ The app can be deployed to any platform that supports Next.js:
 
 ## 📝 Environment Variables
 
-Currently, no environment variables are required. For production, you may want to add:
-- Database connection strings
-- Email service API keys
-- Payment gateway credentials
+### Required for Authentication (Firebase)
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=your-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+```
+
+### Optional (Stripe Payments)
+
+```env
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_... or pk_live_...
+STRIPE_SECRET_KEY=sk_test_... or sk_live_...
+```
+
+**For Vercel Deployment:** See [VERCEL_SETUP.md](./VERCEL_SETUP.md) for detailed instructions on setting environment variables in Vercel.
 
 ## 🤝 Contributing
 

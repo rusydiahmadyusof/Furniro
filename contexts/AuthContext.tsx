@@ -29,14 +29,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (!auth) {
+      console.warn("Firebase auth is not initialized. Check your environment variables.");
       setIsLoading(false);
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setIsLoading(false);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        setUser(user);
+        setIsLoading(false);
+      },
+      (error) => {
+        console.error("Auth state change error:", error);
+        setIsLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, []);

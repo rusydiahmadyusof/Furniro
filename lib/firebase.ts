@@ -12,28 +12,48 @@ const firebaseConfig = {
 };
 
 // Validate required environment variables
-if (typeof window !== "undefined") {
+const validateFirebaseConfig = () => {
   const required = ["apiKey", "authDomain", "projectId", "appId"];
   const missing = required.filter((key) => !firebaseConfig[key as keyof typeof firebaseConfig]);
+  
   if (missing.length > 0) {
+    const varNameMap: Record<string, string> = {
+      apiKey: "NEXT_PUBLIC_FIREBASE_API_KEY",
+      authDomain: "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
+      projectId: "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
+      appId: "NEXT_PUBLIC_FIREBASE_APP_ID",
+    };
+    const missingVars = missing.map(key => varNameMap[key]).join(", ");
     console.error(
-      `Missing Firebase config: ${missing.join(", ")}. Please set NEXT_PUBLIC_FIREBASE_* in .env.local`
+      `❌ Missing Firebase environment variables: ${missingVars}\n` +
+      `Please set these in Vercel: Settings → Environment Variables`
     );
+    return false;
   }
-}
+  return true;
+};
 
 // Initialize Firebase only on client side
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
 
 if (typeof window !== "undefined") {
-  if (getApps().length === 0) {
-    app = initializeApp(firebaseConfig);
+  if (!validateFirebaseConfig()) {
+    console.error("Firebase cannot be initialized due to missing configuration");
   } else {
-    app = getApps()[0];
-  }
-  if (app) {
-    auth = getAuth(app);
+    try {
+      if (getApps().length === 0) {
+        app = initializeApp(firebaseConfig);
+        console.log("✅ Firebase initialized successfully");
+      } else {
+        app = getApps()[0];
+      }
+      if (app) {
+        auth = getAuth(app);
+      }
+    } catch (error) {
+      console.error("❌ Firebase initialization error:", error);
+    }
   }
 }
 

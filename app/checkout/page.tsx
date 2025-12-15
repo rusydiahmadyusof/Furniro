@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Elements } from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe";
@@ -183,6 +183,8 @@ export default function CheckoutPage() {
     appearance: { theme: "stripe" as const },
   } : null;
 
+  const stripePromise = useMemo(() => getStripe(), []);
+
   return (
     <main className="min-h-screen bg-white">
       <Header />
@@ -215,7 +217,10 @@ export default function CheckoutPage() {
                       <LoadingSpinner size="lg" />
                     </div>
                   ) : stripeOptions ? (
-                    <Elements stripePromise={getStripe()} options={stripeOptions}>
+                    <Elements 
+                      {...({ stripePromise } as any)} 
+                      options={stripeOptions}
+                    >
                       <StripePaymentForm
                         amount={totalAmount}
                         onSuccess={handleStripeSuccess}
