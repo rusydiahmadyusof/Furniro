@@ -8,6 +8,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
   updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useToast } from "@/components/ToastProvider";
@@ -17,6 +19,7 @@ interface AuthContextType {
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -115,6 +118,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    if (!auth) {
+      throw new Error("Firebase is not initialized");
+    }
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      showToast("Signed in with Google successfully!", "success");
+    } catch (error: any) {
+      let errorMessage = "Failed to sign in with Google. Please try again.";
+      
+      switch (error.code) {
+        case "auth/popup-closed-by-user":
+          errorMessage = "Sign-in popup was closed. Please try again.";
+          break;
+        case "auth/popup-blocked":
+          errorMessage = "Popup was blocked. Please allow popups and try again.";
+          break;
+        case "auth/cancelled-popup-request":
+          errorMessage = "Sign-in was cancelled. Please try again.";
+          break;
+        case "auth/account-exists-with-different-credential":
+          errorMessage = "An account with this email already exists. Please sign in with your email and password.";
+          break;
+      }
+      
+      throw new Error(errorMessage);
+    }
+  };
+
   const signOut = async () => {
     if (!auth) {
       throw new Error("Firebase is not initialized");
@@ -135,6 +168,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         signIn,
         signUp,
+        signInWithGoogle,
         signOut,
       }}
     >

@@ -25,6 +25,17 @@ const StripePaymentForm = ({
   const { showToast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Safety check - if Stripe or Elements aren't available, show error
+  if (!stripe || !elements) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-500 mb-4">
+          Payment system is not available. Please refresh the page.
+        </p>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;

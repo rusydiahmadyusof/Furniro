@@ -54,9 +54,14 @@ const BillingDetailsForm = ({
     >
   ) => {
     try {
+      if (!e?.target?.name) {
+        console.warn('Form change event missing target name');
+        return;
+      }
+
       const newData = {
         ...formData,
-        [e.target.name]: e.target.value,
+        [e.target.name]: e.target.value || '',
       };
       setFormData(newData);
 
@@ -66,7 +71,13 @@ const BillingDetailsForm = ({
       }
 
       // Notify parent of data change
-      onDataChange?.(newData);
+      if (onDataChange) {
+        try {
+          onDataChange(newData);
+        } catch (parentError) {
+          console.error('Error in parent onDataChange:', parentError);
+        }
+      }
     } catch (error) {
       console.error('Error handling form change:', error);
     }

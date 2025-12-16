@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Elements } from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe";
@@ -73,28 +73,22 @@ export default function CheckoutPage() {
   const { showToast } = useToast();
   const router = useRouter();
 
-  const orderItems = cartItems.map((item) => ({
-    name: item.product.name,
-    quantity: item.quantity,
-    price: item.product.price,
-  }));
+  const orderItems = useMemo(() => {
+    if (!cartItems || cartItems.length === 0) return [];
+    return cartItems.map((item) => ({
+      name: item.product.name,
+      quantity: item.quantity,
+      price: item.product.price,
+    }));
+  }, [cartItems]);
 
   const totalAmount = getTotalPrice();
 
-  // Create payment intent when Stripe is selected
-  useEffect(() => {
-    if (paymentMethod === "stripe" && totalAmount > 0 && billingData?.email) {
-      // Only create payment intent if we have a valid email
-      createPaymentIntent().catch((error) => {
-        console.error("Error creating payment intent:", error);
-      });
-    } else {
-      setStripeClientSecret(null);
+  const createPaymentIntent = useCallback(async () => {
+    if (!billingData?.email || totalAmount <= 0 || orderItems.length === 0) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentMethod, totalAmount, billingData?.email]);
 
-  const createPaymentIntent = async () => {
     setIsLoadingStripe(true);
     try {
       const response = await fetch("/api/create-payment-intent", {
@@ -105,26 +99,42 @@ export default function CheckoutPage() {
           currency: "myr",
           metadata: {
             orderItems: JSON.stringify(orderItems),
-            customerEmail: billingData?.email || "",
+            customerEmail: billingData.email,
           },
         }),
       });
 
-      const data = await response.json();
-      
-      if (!response.ok || !data.clientSecret) {
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
         const errorMessage = data.error || data.details || "Failed to initialize payment";
         showToast(errorMessage, "error");
         return;
       }
 
+      const data = await response.json();
+      
+      if (!data.clientSecret) {
+        showToast("Failed to initialize payment. Please try again.", "error");
+        return;
+      }
+
       setStripeClientSecret(data.clientSecret);
     } catch (error: any) {
+      console.error("Error creating payment intent:", error);
       showToast("Failed to initialize payment. Please check your Stripe API keys.", "error");
     } finally {
       setIsLoadingStripe(false);
     }
-  };
+  }, [billingData?.email, totalAmount, orderItems, showToast]);
+
+  // Create payment intent when Stripe is selected
+  useEffect(() => {
+    if (paymentMethod === "stripe" && totalAmount > 0 && billingData?.email && orderItems.length > 0) {
+      createPaymentIntent();
+    } else {
+      setStripeClientSecret(null);
+    }
+  }, [paymentMethod, totalAmount, billingData?.email, orderItems.length, createPaymentIntent]);
 
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) {
@@ -211,6 +221,10 @@ export default function CheckoutPage() {
               <BillingDetailsForm 
                 onDataChange={(data) => {
                   try {
+                    if (!data) {
+                      console.warn('Billing data is null or undefined');
+                      return;
+                    }
                     setBillingData(data);
                     // Clear errors when user starts typing
                     if (showBillingErrors && Object.keys(billingErrors).length > 0) {
@@ -235,9 +249,9 @@ export default function CheckoutPage() {
                     <div className="flex items-center justify-center py-8">
                       <LoadingSpinner size="lg" />
                     </div>
-                  ) : stripeOptions ? (
+                  ) : stripeOptions && stripePromise ? (
                     <Elements 
-                      {...({ stripePromise } as any)} 
+                      {...({ stripe: stripePromise } as any)} 
                       options={stripeOptions}
                     >
                       <StripePaymentForm
