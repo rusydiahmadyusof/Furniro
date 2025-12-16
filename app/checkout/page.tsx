@@ -64,6 +64,7 @@ const validateBillingData = (data: BillingFormData): { isValid: boolean; errors:
 export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState("direct-bank-transfer");
   const [billingData, setBillingData] = useState<BillingFormData | null>(null);
+  const [billingErrors, setBillingErrors] = useState<Record<string, string>>({});
   const [showBillingErrors, setShowBillingErrors] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [stripeClientSecret, setStripeClientSecret] = useState<string | null>(null);
@@ -82,13 +83,16 @@ export default function CheckoutPage() {
 
   // Create payment intent when Stripe is selected
   useEffect(() => {
-    if (paymentMethod === "stripe" && totalAmount > 0 && billingData) {
-      createPaymentIntent();
+    if (paymentMethod === "stripe" && totalAmount > 0 && billingData?.email) {
+      // Only create payment intent if we have a valid email
+      createPaymentIntent().catch((error) => {
+        console.error("Error creating payment intent:", error);
+      });
     } else {
       setStripeClientSecret(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentMethod, totalAmount, billingData]);
+  }, [paymentMethod, totalAmount, billingData?.email]);
 
   const createPaymentIntent = async () => {
     setIsLoadingStripe(true);
@@ -137,12 +141,16 @@ export default function CheckoutPage() {
 
     const validation = validateBillingData(billingData);
     if (!validation.isValid) {
+      setBillingErrors(validation.errors);
       const errorMessages = Object.values(validation.errors);
       showToast(`Please fix: ${errorMessages.slice(0, 2).join(", ")}`, "error");
       setShowBillingErrors(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
+
+    // Clear errors if validation passes
+    setBillingErrors({});
 
     if (paymentMethod !== "stripe") {
       await processOrder();
@@ -201,8 +209,19 @@ export default function CheckoutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
               <BillingDetailsForm 
-                onDataChange={setBillingData}
+                onDataChange={(data) => {
+                  try {
+                    setBillingData(data);
+                    // Clear errors when user starts typing
+                    if (showBillingErrors && Object.keys(billingErrors).length > 0) {
+                      setBillingErrors({});
+                    }
+                  } catch (error) {
+                    console.error("Error updating billing data:", error);
+                  }
+                }}
                 showErrors={showBillingErrors}
+                errors={billingErrors}
               />
             </div>
 

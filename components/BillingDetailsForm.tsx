@@ -6,6 +6,7 @@ interface BillingDetailsFormProps {
   onDataChange?: (data: BillingFormData) => void;
   initialData?: Partial<BillingFormData>;
   showErrors?: boolean;
+  errors?: Record<string, string>;
 }
 
 export interface BillingFormData {
@@ -26,6 +27,7 @@ const BillingDetailsForm = ({
   onDataChange,
   initialData,
   showErrors = false,
+  errors: externalErrors = {},
 }: BillingDetailsFormProps) => {
   const [formData, setFormData] = useState<BillingFormData>({
     firstName: initialData?.firstName || '',
@@ -40,26 +42,34 @@ const BillingDetailsForm = ({
     email: initialData?.email || '',
     additionalInfo: initialData?.additionalInfo || '',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [localErrors, setLocalErrors] = useState<Record<string, string>>({});
+
+  // Use external errors if provided, otherwise use local errors
+  const errors =
+    Object.keys(externalErrors).length > 0 ? externalErrors : localErrors;
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    const newData = {
-      ...formData,
-      [e.target.name]: e.target.value,
-    };
-    setFormData(newData);
+    try {
+      const newData = {
+        ...formData,
+        [e.target.name]: e.target.value,
+      };
+      setFormData(newData);
 
-    // Clear error for this field
-    if (errors[e.target.name]) {
-      setErrors({ ...errors, [e.target.name]: '' });
+      // Clear error for this field
+      if (localErrors[e.target.name]) {
+        setLocalErrors({ ...localErrors, [e.target.name]: '' });
+      }
+
+      // Notify parent of data change
+      onDataChange?.(newData);
+    } catch (error) {
+      console.error('Error handling form change:', error);
     }
-
-    // Notify parent of data change
-    onDataChange?.(newData);
   };
 
   return (
